@@ -18,6 +18,11 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import java.awt.Font;
@@ -103,6 +108,47 @@ public class BusinessPartner extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					Connection connection = null;
+					
+					Class.forName("oracle.jdbc.driver.OracleDriver");
+					try {
+						connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "Compiere", "1234");
+						if (connection != null) {
+							System.out.println("Connection established!");
+						}
+						
+						String queryString = "SELECT * from C_BPARTNER";
+						Statement statement = connection.createStatement();
+						ResultSet resultSet = statement.executeQuery(queryString);
+						ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+						
+						int column_idx = 1, column_size = resultSetMetaData.getColumnCount();
+						while (column_idx <= column_size) {
+							System.out.print(resultSetMetaData.getColumnName(column_idx) + "\t");
+							column_idx += 1;
+						}
+						
+						//System.out.println(resultSetMetaData.getColumnName(1) + "\t" + resultSetMetaData.getColumnName(2) + "\t" + resultSetMetaData.getColumnName(3) + "\t" + resultSetMetaData.getColumnName(4));
+
+						//while (resultSet.next())
+						//{
+						//	System.out.println(resultSet.getInt("p_no") + "\t" + resultSet.getString("p_name") + "\t" + resultSet.getInt("p_price") + "\t" + resultSet.getString("p_detail"));
+						//}
+						
+						
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						if (connection != null) {
+							try {
+								connection.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+
+						}
+					}
+					
 					BusinessPartner frame = new BusinessPartner();
 					frame.setVisible(true);
 				} catch (Exception e) {
@@ -1332,32 +1378,6 @@ public class BusinessPartner extends JFrame {
 		gbc_horizontalStrut_15.gridy = 2;
 		panel_2.add(horizontalStrut_15, gbc_horizontalStrut_15);
 		
-		JTree tree = new JTree();
-		tree.setModel(new DefaultTreeModel(
-			new DefaultMutableTreeNode("Addresses") {
-				{
-					DefaultMutableTreeNode node_1;
-					node_1 = new DefaultMutableTreeNode("Bill to");
-						node_1.add(new DefaultMutableTreeNode("Bill To/Main Address"));
-						node_1.add(new DefaultMutableTreeNode("Define New"));
-					add(node_1);
-					node_1 = new DefaultMutableTreeNode("Ship to");
-						node_1.add(new DefaultMutableTreeNode("Warehouse Brooklyn"));
-						node_1.add(new DefaultMutableTreeNode("Warehouse Havertown"));
-						node_1.add(new DefaultMutableTreeNode("Define New"));
-					add(node_1);
-				}
-			}
-		));
-		tree.setRootVisible(false);
-		GridBagConstraints gbc_tree = new GridBagConstraints();
-		gbc_tree.gridheight = 7;
-		gbc_tree.insets = new Insets(0, 0, 5, 5);
-		gbc_tree.fill = GridBagConstraints.BOTH;
-		gbc_tree.gridx = 1;
-		gbc_tree.gridy = 2;
-		panel_2.add(tree, gbc_tree);
-		
 		Component horizontalStrut_17 = Box.createHorizontalStrut(20);
 		GridBagConstraints gbc_horizontalStrut_17 = new GridBagConstraints();
 		gbc_horizontalStrut_17.insets = new Insets(0, 0, 5, 5);
@@ -2403,6 +2423,13 @@ public class BusinessPartner extends JFrame {
 		panel_8.setLayout(gbl_panel_8);
 		
 		JButton btnOk = new JButton("OK");
+		btnOk.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				// 저장 핸들러
+				String name = txtNormThompson.getText();
+				System.out.println(name);
+			}
+		});
 		GridBagConstraints gbc_btnOk = new GridBagConstraints();
 		gbc_btnOk.insets = new Insets(0, 0, 0, 5);
 		gbc_btnOk.gridx = 0;
