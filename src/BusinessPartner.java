@@ -1,4 +1,3 @@
-import java.awt.BorderLayout;
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -8,7 +7,6 @@ import java.awt.GridBagLayout;
 import javax.swing.JTextField;
 import java.awt.GridBagConstraints;
 import javax.swing.JLabel;
-import java.awt.CardLayout;
 import java.awt.Insets;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
@@ -16,31 +14,22 @@ import javax.swing.SwingConstants;
 import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JButton;
-import javax.swing.ImageIcon;
 import java.awt.event.ActionListener;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
+import java.sql.SQLException;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import java.awt.Font;
 import javax.swing.JTextArea;
 import javax.swing.JCheckBox;
 import javax.swing.JToggleButton;
-import javax.swing.JTree;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.JRadioButton;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.ListSelectionModel;
-import javax.swing.JList;
-import javax.swing.AbstractListModel;
 
 public class BusinessPartner extends JFrame {
-
 	private JPanel contentPane;
 	private JTextField txtC;
 	private JTextField txtNormThompson;
@@ -100,6 +89,7 @@ public class BusinessPartner extends JFrame {
 	private JTextField textField_43;
 	private JTextField textField_44;
 	private JTextField textField_45;
+	private JComboBox comboBox;
 
 	/**
 	 * Launch the application.
@@ -107,53 +97,27 @@ public class BusinessPartner extends JFrame {
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
+				BusinessPartner frame = new BusinessPartner();
+				
+				//
+				QueryExecuter executer = new QueryExecuter(false);
+				ResultSet result = executer.execute("SELECT * FROM C_BPARTNER WHERE C_BPARTNER_ID=118");
 				try {
-					Connection connection = null;
-					
-					Class.forName("oracle.jdbc.driver.OracleDriver");
-					try {
-						connection = DriverManager.getConnection("jdbc:oracle:thin:@localhost:1521:xe", "Compiere", "1234");
-						if (connection != null) {
-							System.out.println("Connection established!");
-						}
-						
-						String queryString = "SELECT * from C_BPARTNER";
-						Statement statement = connection.createStatement();
-						ResultSet resultSet = statement.executeQuery(queryString);
-						ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-						
-						int column_idx = 1, column_size = resultSetMetaData.getColumnCount();
-						while (column_idx <= column_size) {
-							System.out.print(resultSetMetaData.getColumnName(column_idx) + "\t");
-							column_idx += 1;
-						}
-						
-						//System.out.println(resultSetMetaData.getColumnName(1) + "\t" + resultSetMetaData.getColumnName(2) + "\t" + resultSetMetaData.getColumnName(3) + "\t" + resultSetMetaData.getColumnName(4));
-
-						//while (resultSet.next())
-						//{
-						//	System.out.println(resultSet.getInt("p_no") + "\t" + resultSet.getString("p_name") + "\t" + resultSet.getInt("p_price") + "\t" + resultSet.getString("p_detail"));
-						//}
-						
-						
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						if (connection != null) {
-							try {
-								connection.close();
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-
-						}
-					}
-					
-					BusinessPartner frame = new BusinessPartner();
-					frame.setVisible(true);
-				} catch (Exception e) {
+					if (result.next()) {
+						frame.applyResultToForm(result);
+					}					
+				} catch (SQLException e) {
 					e.printStackTrace();
 				}
+				
+//				try {
+//					System.out.println(result.getString(2));					
+//				} catch (SQLException e) {
+//					e.printStackTrace();
+//				}
+				
+				
+				frame.setVisible(true);
 			}
 		});
 	}
@@ -215,8 +179,9 @@ public class BusinessPartner extends JFrame {
 		contentPane.add(txtC, gbc_txtC);
 		txtC.setColumns(10);
 		
-		JComboBox comboBox = new JComboBox();
+		comboBox = new JComboBox();
 		comboBox.setModel(new DefaultComboBoxModel(new String[] {"Customer", "Lead", "Vendor"}));
+		comboBox.setSelectedIndex(1);
 		GridBagConstraints gbc_comboBox = new GridBagConstraints();
 		gbc_comboBox.anchor = GridBagConstraints.WEST;
 		gbc_comboBox.insets = new Insets(0, 0, 5, 5);
@@ -2475,5 +2440,27 @@ public class BusinessPartner extends JFrame {
 		gbc_verticalStrut_4.gridy = 10;
 		contentPane.add(verticalStrut_4, gbc_verticalStrut_4);
 	}
-
+	
+	
+	void applyResultToForm(ResultSet result) {
+		try {
+			this.txtC.setText(result.getString("C_BPARTNER_ID"));
+			this.txtNormThompson.setText(result.getString("NAME"));
+			this.textField.setText(result.getString("NAME2"));
+			
+			int BPartnerType = 1;
+			if (result.getString("ISCUSTOMER") == "Y") {
+				BPartnerType = 1;
+			} else if (result.getString("ISVENDOR") == "Y") {
+				BPartnerType = 3;
+			} else {
+				BPartnerType = 2;
+			}
+			this.comboBox.setSelectedIndex(BPartnerType);
+			
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 }
